@@ -1,19 +1,14 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const cors = require('cors');
 const { Server } = require('socket.io');
+const app = require('./app');
 const NodeMediaServer = require('node-media-server');
 const mongoose = require('mongoose');
-const streamRoutes = require('./routes/stream.routes');
 const ffmpegPath = require('ffmpeg-static');
 
 require('dotenv').config();
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use('/api/streams', streamRoutes);
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -58,10 +53,6 @@ const nmsConfig = {
 const nms = new NodeMediaServer(nmsConfig);
 
 app.use('/hls', express.static(path.join(__dirname, 'media/live')));
-
-
-console.log('✅ FFmpeg Path:', ffmpegPath);
-console.log('✅ NMS Config:', JSON.stringify(nmsConfig, null, 2));
 
 
 nms.run();
