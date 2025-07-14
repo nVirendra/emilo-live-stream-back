@@ -45,7 +45,9 @@ const getFeedPosts = async (req, res) => {
       .populate('userId', 'name profilePic')
       .populate('comments.userId', 'name profilePic');
 
-    res.json({ status: true, result: posts });
+    // res.json({ status: true, result: posts });
+    res.json(posts);        // instead of { status: true, result: posts }
+
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err });
   }
