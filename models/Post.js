@@ -15,14 +15,21 @@ const postSchema = new mongoose.Schema(
       default: 'none',
     },
     privacy: { type: String, enum: ['public', 'private'], default: 'public' },
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    comments: [
-      {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        comment: String,
-        createdAt: { type: Date, default: Date.now },
-      },
-    ],
+    likes: {
+  type: [mongoose.Schema.Types.ObjectId],
+  ref: 'User',
+  default: [],
+},
+comments: {
+  type: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      comment: String,
+    },
+  ],
+  default: [],
+},
+
   },
   { timestamps: true }
 );

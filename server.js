@@ -1,11 +1,8 @@
 const express = require('express');
 const http = require('http');
-const path = require('path');
 const { Server } = require('socket.io');
 const app = require('./app');
-const NodeMediaServer = require('node-media-server');
 const connectDB = require('./config/database');
-const nmsConfig = require('./config/nms.config');
 
 require('dotenv').config();
 
@@ -25,8 +22,6 @@ const io = new Server(server, {
 // Connect to MongoDB first
 connectDB()
   .then(() => {
-    // Serve static HLS files
-    app.use('/hls', express.static(path.join(__dirname, 'media/live')));
 
     // Start HTTP server
     const PORT = process.env.PORT || 5000;
@@ -34,19 +29,7 @@ connectDB()
       console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
 
-    // Start NodeMediaServer
-    const nms = new NodeMediaServer(nmsConfig);
-    nms.run();
-
-    // Log stream events
-    nms.on('postPublish', (id, streamPath) => {
-      console.log(`[Stream started] ${streamPath}`);
-    });
-
-    nms.on('donePublish', (id, streamPath) => {
-      console.log(`[Stream ended] ${streamPath}`);
-    });
-
+  
     // Initialize WebSocket
     require('./socket/stream.socket')(io);
   })
