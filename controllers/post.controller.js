@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const asyncHandler = require('../utils/asyncHandler');
 const cloudinary = require('../config/cloudinary');
+const User = require('../models/User');
 
 const createPost = async (req, res) => {
   try {
@@ -45,7 +46,7 @@ const getFeedPosts = async (req, res) => {
       .populate('userId', 'name profilePic')
       .populate('comments.userId', 'name profilePic');
 
-    res.json({ status: true, result: posts });
+   return res.json({ status: true, result: posts });
     //res.json(posts);       
 
   } catch (err) {
@@ -73,18 +74,51 @@ const likePost = asyncHandler(async (req, res) => {
   res.json({ status: true, result: updated });
 });
 
+// const commentOnPost = asyncHandler(async (req, res) => {
+//   const { comment } = req.body;
+//   const post = await Post.findById(req.params.id);
+//   if (!post) {
+//     res.status(404).json({ message: 'Post not found' });
+//     return;
+//   }
+
+//   post.comments.push({ userId: req.user._id, comment });
+//   await post.save();
+
+//   res.json({ status: true, result: post });
+// });
+
 const commentOnPost = asyncHandler(async (req, res) => {
   const { comment } = req.body;
+
+  // Step 1: Find the post
   const post = await Post.findById(req.params.id);
   if (!post) {
-    res.status(404).json({ message: 'Post not found' });
-    return;
+    return res.status(404).json({ status: false, message: "Post not found" });
   }
 
-  post.comments.push({ userId: req.user._id, comment });
+  // Step 2: Get user details
+  const user = await User.findById(req.user._id).select("name profilePic");
+
+  // Step 3: Push new comment
+  post.comments.push({
+    userId: user._id,
+    comment,
+  });
+
+  // Step 4: Save post
   await post.save();
 
-  res.json({ status: true, result: post });
+  // Step 5: Populate just like getFeedPosts
+  const updatedPost = await Post.findById(req.params.id)
+    .populate("userId", "name profilePic")
+    .populate("comments.userId", "name profilePic");
+
+  // Step 6: Send clean response
+  return res.json({
+    status: true,
+    result: updatedPost,
+  });
 });
 
 const getUserPosts = async (req, res) => {
